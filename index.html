@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+<head>
+	<title>RgX Directory System</title>
+	<style type="text/css">
+		body {
+			font-family: Verdana, Arial, Helvetica, sans-serif;
+			position: relative;
+			color: #222222;
+			font-size: 1.0em;
+		}
+
+		html.embed,
+		html.embed body {
+			padding: 0;
+			margin: 0;
+		}
+
+		html.embed p {
+			padding: 0;
+			margin: 0;
+			display: none;
+		}
+
+		#filemanager {
+			height: 50vh;
+			max-height: 400px;
+			position: relative;
+		}
+
+		html.embed #filemanager {
+			height: 100vh;
+		}
+	</style>
+	<link rel="stylesheet" type="text/css" href="file-explorer/file-explorer.css">
+	<link rel="shortcut icon" href="artwork/pngs/favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+	<script type="text/javascript" src="file-explorer/file-explorer.js"></script>
+
+	   <p id="team-name">File Manager</p>
+
+	<div id="filemanager">
+
+	</div>
+
+	<script type="text/javascript">
+		(function () {
+			// Handle iframe demo embed.
+			if (window.location.href.indexOf('embed=true') > -1) document.documentElement.classList.add('embed');
+
+			// Back to regularly scheduled program.
+			var elem = document.getElementById('filemanager');
+
+			// Random folders and filenames.
+			var testdiropts = [
+				{ name: 'Test Folder', type: 'folder', id: 'folder1', hash: 'folder1' },
+				{ name: 'Test Folder 2', type: 'folder', id: 'folder2', hash: 'folder2' },
+			];
+
+			var testfileopts = [
+				{ name: 'Really_long_file_name_that_is_really,_really,_really,_long.xlsx', type: 'file', id: 'file1', hash: 'file1', 'size': 50000, tooltip: 'Last modified: Today\nCool!', overlay: 'custom_fileexplorer_overlay_lock' },
+				{ name: 'Another file.txt', type: 'file', id: 'file2', hash: 'file2' },
+			];
+
+			// Random thumbnail URLs for the demo.
+			var imageurlopts = [
+				'https://picsum.photos/{0}/{1}',
+				'https://source.unsplash.com/{0}x{1}'
+
+			];
+
+			var FormatStr = function (format) {
+				var args = Array.prototype.slice.call(arguments, 1);
+
+				return format.replace(/{(\d+)}/g, function (match, number) {
+					return (typeof args[number] != 'undefined' ? args[number] : match);
+				});
+			};
+
+			var GetRandomImageURL = function () {
+				var url = imageurlopts[Math.floor(Math.random() * imageurlopts.length)];
+
+				url = FormatStr(url, Math.floor(Math.random() * 300) + 200, Math.floor(Math.random() * 300) + 200);
+
+				return url;
+			};
+
+			var options = {
+				group: 'demo_test_group',
+
+				capturebrowser: true,
+
+				initpath: [
+					['', 'ThisPC (/)', { canmodify: false }]
+
+				],
+				tools: {
+					item_checkboxes: true
+				},
+				onrefresh: function (folder, required) {
+					if (folder === this.GetCurrentFolder()) {
+					}
+					var newentries = [];
+					for (var x = 0; x < 5; x++) {
+						var tempdir = Object.assign({}, testdiropts[Math.floor(Math.random() * testdiropts.length)]);
+
+						tempdir.name = x + ' ' + tempdir.name;
+						tempdir.id += '_' + x;
+						tempdir.hash += '_' + x;
+						newentries.push(tempdir);
+					}
+
+					for (var x = 0; x < 5; x++) {
+						var tempfile = Object.assign({}, testfileopts[Math.floor(Math.random() * testfileopts.length)]);
+						tempfile.name = x + ' ' + tempfile.name;
+						tempfile.id += '_' + x;
+						tempfile.hash += '_' + x;
+						if (tempfile.thumb) tempfile.thumb = GetRandomImageURL();
+						newentries.push(tempfile);
+					}
+
+					newentries.push({ name: 'data1', type: 'folder', id: 'data1', hash: 'data1' });
+					newentries.push({ name: 'data2', type: 'folder', id: 'data2', hash: 'data2' });
+					newentries.push({ name: 'data3', type: 'folder', id: 'data3', hash: 'data3' });
+					if (this.IsMappedFolder(folder)) folder.SetEntries(newentries);
+				},
+				onrename: function (renamed, folder, entry, newname) {
+					// Simulate network delay.
+					setTimeout(function () {
+						entry.id = newname;
+						entry.name = newname;
+
+						renamed(entry);
+					}, 250);
+				},
+				onopenfile: function (folder, entry) {
+				},
+				onnewfolder: function (created, folder) {
+					// Simulate network delay.
+					setTimeout(function () {
+						var entry = { name: 'New Folder', type: 'folder', id: 'asdfasdffolder123', hash: 'asdfasdffolder123' };
+
+						created(entry);
+					}, 250);
+				},
+				onnewfile: function (created, folder) {
+					// Simulate network delay.
+					setTimeout(function () {
+						var entry = { name: 'New File.txt', type: 'file', id: 'asdfasdffile123', hash: 'asdfasdffile123' };
+
+						created(entry);
+					}, 250);
+				},
+				ondelete: function (deleted, folder, ids, entries, recycle) {
+
+					// Ask the user if they really want to delete/recycle the items.
+					if (!recycle && !confirm('Are you sure you want to permanently delete ' + (entries.length == 1 ? '"' + entries[0].name + '"' : entries.length + ' items') + '?')) deleted('Cancelled deletion');
+					else {
+						// Simulate network delay.
+						setTimeout(function () {
+							deleted(true);
+						}, 250);
+					}
+				},
+			};
+			var fe = new window.FileExplorer(elem, options);
+		})();
+	</script>
+</body>
+
+</html>
